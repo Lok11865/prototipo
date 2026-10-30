@@ -18,9 +18,6 @@ Autor: Diego Roberto Bautista Ixcoy (carné 0903-23-5352).
 
 Descargue el repositorio y abra `prototipo/index.html` en un navegador. Para probarlo, toque **Ingresar** sin escribir nada. El botón del encabezado simula perder y recuperar la conexión para ver el contador de cambios pendientes.
 
-Con GitHub Pages activado (Settings > Pages > rama `main`, carpeta `/`), queda disponible en `https://<usuario>.github.io/<repositorio>/prototipo/`.
-
-Todos los datos del prototipo son ficticios (cuatro pacientes, cinco medicamentos y seis lotes).
 
 ## Diagramas
 
