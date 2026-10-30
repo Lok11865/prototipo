@@ -1,0 +1,20 @@
+sequenceDiagram
+  actor U as Usuario
+  participant P as Pantalla
+  participant VM as ViewModel
+  participant UC as RegistrarDispensacion
+  participant R as Repositorios
+  participant Q as Cola de sincronización
+  U->>P: Elige medicamento y cantidad
+  P->>VM: solicitarDispensacion()
+  VM->>UC: ejecutar(solicitud)
+  UC->>R: lotesDisponibles(medicamento)
+  R-->>UC: lotes con existencia
+  UC-->>VM: lote propuesto, el que vence primero
+  VM-->>P: muestra el lote y su semáforo
+  U->>P: Confirma
+  UC->>UC: validar RN-05 y RN-06
+  UC->>R: guardar dispensación y salida del kardex, en una transacción
+  UC->>Q: encolar los dos cambios
+  UC-->>VM: resultado y alerta de existencia mínima si corresponde
+  VM-->>P: confirmación

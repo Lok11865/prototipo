@@ -1,0 +1,6 @@
+stateDiagram-v2
+  [*] --> Disponible : se registra el ingreso
+  Disponible --> Agotado : existencia llega a cero
+  Agotado --> Disponible : ingresa cantidad o se ajusta
+  Disponible --> Vencido : pasa la fecha de vencimiento
+  Vencido --> DadoDeBaja : se da de baja con motivo

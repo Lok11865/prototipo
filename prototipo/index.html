@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CantelSaludable: prototipo navegable</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+button{font-family:inherit}
+.btn{min-height:48px;padding:0 16px;border-radius:12px;border:2px solid #0F766E;background:#fff;color:#0F766E;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;cursor:pointer}
+.btnp{background:#0F766E;color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:10px}
+.lbl{font-size:14px;font-weight:500;color:#334155}
+.fld{display:flex;flex-direction:column;gap:6px}
+.inp{min-height:48px;border:1px solid #64748B;border-radius:10px;padding:0 12px;font-size:16px;font-family:inherit;width:100%;background:#fff;color:#0F172A}
+.ta{min-height:76px;padding:10px 12px}
+.chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap}
+.h2{margin:0;font-size:18px;font-weight:700}
+.muted{color:#475569;font-size:14px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid #64748B;font-size:15px;cursor:pointer;white-space:nowrap}
+.item{width:100%;text-align:left;background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:12px 16px;min-height:56px;display:flex;flex-direction:column;gap:4px;cursor:pointer;font-size:16px;color:#0F172A}
+.navbtn{background:none;border:none;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;cursor:pointer}
+.iconbtn{width:44px;height:44px;border:none;background:transparent;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:22px}
+.syncbtn{min-height:44px;padding:0 12px;border-radius:999px;border:none;font-size:13px;font-weight:700;cursor:pointer}
+.sep{height:1px;background:#E2E8F0}
+</style>
+
+<style>
+html,body{height:100%}
+body{background:#E2E8F0;display:flex;align-items:center;justify-content:center;min-height:100vh}
+@media (max-width:420px){body{background:#F8FAFC;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<template id="tpl">
+
+
+<div style="width:390px;height:844px;position:relative;overflow:hidden;display:flex;flex-direction:column;background:#F8FAFC;font-family:Roboto,system-ui,sans-serif;color:#0F172A;font-size:16px">
+
+<sc-if value="{{isLogin}}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;padding:32px 24px">
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font-size:32px;font-weight:700;color:#0F766E">CantelSaludable</div>
+<div class="muted">Registro de pacientes, recetas y medicamentos</div>
+</div>
+<div class="fld"><label class="lbl" for="usr">Usuario</label><input id="usr" class="inp" type="text" placeholder="Escriba su usuario" autocomplete="off"></div>
+<div class="fld"><label class="lbl" for="pwd">Contraseña</label><input id="pwd" class="inp" type="password" placeholder="Escriba su contraseña"></div>
+<button type="button" class="btn btnp" onClick="{{login}}">Ingresar</button>
+<div class="muted" style="font-size:13px">Prototipo con datos ficticios. Para probarlo, toque Ingresar sin escribir nada.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{showHeader}}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;display:flex;align-items:center;gap:8px;padding:6px 12px;background:#0F766E;color:#fff;min-height:60px">
+<sc-if value="{{showBack}}" hint-placeholder-val="{{ false }}">
+<button type="button" class="iconbtn" aria-label="Volver" onClick="{{goBack}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+</sc-if>
+<div style="flex:1;font-size:20px;font-weight:500">{{title}}</div>
+<button type="button" class="syncbtn" aria-label="Estado de conexión. Toque para simular sin conexión" style="background: {{syncBg}}; color: {{syncFg}}" onClick="{{toggleOffline}}">{{syncShort}}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{offline}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="flex:none;background:#FEF3C7;color:#713F12;padding:8px 16px;font-size:14px;font-weight:500">Sin conexión: los cambios se guardan en este dispositivo ({{pending}} pendientes).</div>
+</sc-if>
+
+<sc-if value="{{showHeader}}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px">
+
+<sc-if value="{{isHome}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div><div style="font-size:22px;font-weight:700">Buenos días</div><div class="muted">Usuario: Lucía (ficticio) · Perfil: Enfermería</div></div>
+<div class="card">
+<h2 class="h2">Alertas del semáforo</h2>
+<div class="row"><span class="chip" style="background:#7F1D1D;color:#FFFFFF">Rojo · Vencido</span><span>{{nVenc}} lote bloqueado para entrega</span></div>
+<div class="row"><span class="chip" style="background:#FEE2E2;color:#7F1D1D">Rojo</span><span>{{nRojo}} lote vence en menos de 3 meses</span></div>
+<div class="row"><span class="chip" style="background:#FEF3C7;color:#713F12">Amarillo</span><span>{{nAma}} lote vence en 3 a 6 meses</span></div>
+<button type="button" class="btn" onClick="{{goMed}}">Ver lotes</button>
+</div>
+<div class="card">
+<h2 class="h2">Controles pendientes</h2>
+<div>María Elena López Pérez · mañana</div>
+<div>Carlos Humberto Ajanel Sicay · 30/10/2026</div>
+</div>
+<div class="card">
+<h2 class="h2">Sincronización</h2>
+<div>{{syncText}}</div>
+<button type="button" class="btn" onClick="{{toggleOffline}}">{{syncBtn}}</button>
+</div>
+<h2 class="h2">Accesos rápidos</h2>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+<button type="button" class="btn" onClick="{{goPac}}">Buscar paciente</button>
+<button type="button" class="btn" onClick="{{goDispLotes}}">Dispensar</button>
+<button type="button" class="btn" onClick="{{goIngresar}}">Ingresar lote</button>
+<button type="button" class="btn" onClick="{{goRep}}">Reportes</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isSearch}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px;padding-bottom:72px">
+<div class="fld"><label class="lbl" for="busca">Buscar por nombre o número de expediente</label><input id="busca" class="inp" type="search" placeholder="Ejemplo: López o 0001" value="{{q}}" onChange="{{onSearch}}"></div>
+<sc-for list="{{found}}" as="x" hint-placeholder-count="3">
+<button type="button" class="item" onClick="{{x.pick}}">
+<span style="font-weight:700">{{x.nombre}}</span>
+<span class="muted">{{x.sub}}</span>
+<sc-if value="{{x.hasCron}}" hint-placeholder-val="{{ false }}"><span class="chip" style="background:#FEF3C7;color:#713F12;align-self:flex-start">Crónico: {{x.cronico}}</span></sc-if>
+</button>
+</sc-for>
+<sc-if value="{{noFound}}" hint-placeholder-val="{{ false }}"><div class="card">No se encontró ningún paciente. Toque Nuevo paciente para registrarlo.</div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isNewPatient}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div class="muted">Los campos con asterisco son obligatorios. Antes de guardar, el sistema busca si ya existe un expediente similar.</div>
+<div class="fld"><label class="lbl" for="np1">Nombres *</label><input id="np1" class="inp" type="text"></div>
+<div class="fld"><label class="lbl" for="np2">Apellidos *</label><input id="np2" class="inp" type="text"></div>
+<div class="fld"><label class="lbl" for="np3">Fecha de nacimiento *</label><input id="np3" class="inp" type="date"></div>
+<div class="fld"><label class="lbl" for="np4">DPI (si tiene)</label><input id="np4" class="inp" type="text" inputmode="numeric"></div>
+<div class="fld"><label class="lbl" for="np5">Comunidad</label><input id="np5" class="inp" type="text"></div>
+<div class="fld"><label class="lbl" for="np6">Teléfono</label><input id="np6" class="inp" type="tel" inputmode="tel"></div>
+<div class="fld"><label class="lbl" for="np7">Contacto de emergencia</label><input id="np7" class="inp" type="text"></div>
+<div class="card" style="background:#CCFBF1;border-color:#99F6E4;color:#134E4A">La ficha se sugiere según la edad: lactante y niñez, adolescente y joven, o adulto y adulto mayor.</div>
+<button type="button" class="btn btnp" onClick="{{savePatient}}">Guardar paciente</button>
+<button type="button" class="btn" onClick="{{goPac}}">Cancelar</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isPatient}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div class="card">
+<div style="font-size:20px;font-weight:700">{{p.nombre}}</div>
+<div class="muted">Exp. {{p.exp}} · Nac. {{p.nac}} · {{p.edad}}</div>
+<div class="pills"><span class="chip" style="background:#CCFBF1;color:#134E4A">Ficha: {{p.ficha}}</span>
+<sc-if value="{{p.hasCron}}" hint-placeholder-val="{{ false }}"><span class="chip" style="background:#FEF3C7;color:#713F12">Crónico: {{p.cronico}}</span></sc-if></div>
+<sc-if value="{{p.hasCron}}" hint-placeholder-val="{{ false }}"><div class="muted">{{p.control}}</div></sc-if>
+</div>
+<button type="button" class="btn btnp" onClick="{{newConsulta}}">Nueva consulta</button>
+<button type="button" class="btn" onClick="{{goDispPat}}">Dispensar medicamento</button>
+<div class="card"><h2 class="h2">Consultas</h2>
+<sc-for list="{{p.consultas}}" as="c" hint-placeholder-count="2"><div><div style="font-weight:500">{{c.t}}</div><div class="muted">{{c.f}}</div></div></sc-for></div>
+<div class="card"><h2 class="h2">Medicamentos entregados</h2>
+<sc-for list="{{entregas}}" as="e" hint-placeholder-count="2"><div><div style="font-weight:500">{{e.t}}</div><div class="muted">{{e.f}}</div></div></sc-for></div>
+<div class="card"><h2 class="h2">Vacunas</h2>
+<sc-for list="{{p.vacunas}}" as="v" hint-placeholder-count="1"><div><div style="font-weight:500">{{v.t}}</div><div class="muted">{{v.f}}</div></div></sc-for></div>
+</div>
+</sc-if>
+
+<sc-if value="{{isConsulta}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div class="card"><div style="font-weight:700">{{p.nombre}}</div><div class="muted">Ficha sugerida por la edad: {{p.ficha}}</div></div>
+<div class="fld"><label class="lbl" for="c1">Motivo de la consulta</label><input id="c1" class="inp" type="text"></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+<div class="fld"><label class="lbl" for="c2">Peso (kg)</label><input id="c2" class="inp" type="text" inputmode="decimal"></div>
+<div class="fld"><label class="lbl" for="c3">Talla (cm)</label><input id="c3" class="inp" type="text" inputmode="decimal"></div>
+<div class="fld"><label class="lbl" for="c4">Temperatura (°C)</label><input id="c4" class="inp" type="text" inputmode="decimal"></div>
+<div class="fld"><label class="lbl" for="c5">Presión arterial</label><input id="c5" class="inp" type="text"></div>
+</div>
+<div class="fld"><label class="lbl" for="c6">Diagnóstico</label><textarea id="c6" class="inp ta"></textarea></div>
+<div class="fld"><label class="lbl" for="c7">Tratamiento</label><textarea id="c7" class="inp ta"></textarea></div>
+<sc-if value="{{recetaAdjunta}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="background:#DCFCE7;border-color:#86EFAC;color:#14532D"><div style="font-weight:700">Receta adjunta (1 imagen)</div><button type="button" class="btn" onClick="{{goReceta}}">Tomar otra foto</button></div>
+</sc-if>
+<sc-if value="{{noReceta}}" hint-placeholder-val="{{ true }}">
+<div class="card" style="border:2px solid #0F766E;background:#F0FDFA">
+<div style="font-weight:700">Receta médica</div>
+<button type="button" class="btn btnp" style="min-height:56px;font-size:17px" onClick="{{goReceta}}">Tomar foto de receta</button>
+<div class="muted">Pasos: 1. Toque el botón. 2. Encuadre la receta. 3. Revise la vista previa y toque Usar foto.</div>
+</div>
+</sc-if>
+<button type="button" class="btn btnp" onClick="{{saveConsulta}}">Guardar consulta</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isReceta}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div class="muted">Fotografíe la receta antes de entregarla al paciente.</div>
+<sc-if value="{{isCamara}}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:16px;align-items:center">
+<div style="width:100%;height:340px;background:#0F172A;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#E2E8F0;font-size:15px;text-align:center;padding:24px;border:4px dashed #64748B">Encuadre la receta dentro del marco</div>
+<button type="button" aria-label="Tomar foto" onClick="{{tomarFoto}}" style="width:72px;height:72px;border-radius:36px;border:6px solid #0F766E;background:#fff;cursor:pointer"></button>
+</div>
+</sc-if>
+<sc-if value="{{isPreview}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:#fff;border:1px solid #CBD5E1;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px;min-height:300px">
+<div style="font-weight:700;font-size:15px">Receta médica (imagen de ejemplo)</div>
+<div style="height:12px;background:#E2E8F0;border-radius:6px"></div>
+<div style="height:12px;background:#E2E8F0;border-radius:6px;width:80%"></div>
+<div style="height:12px;background:#E2E8F0;border-radius:6px;width:90%"></div>
+<div style="height:12px;background:#E2E8F0;border-radius:6px;width:60%"></div>
+</div>
+<div class="muted">¿Se lee bien la receta? Si no, repita la foto.</div>
+<button type="button" class="btn btnp" onClick="{{usarFoto}}">Usar esta foto</button>
+<button type="button" class="btn" onClick="{{repetirFoto}}">Repetir foto</button>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isDisp}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div class="card"><div class="lbl">Paciente</div><div style="font-weight:700">{{p.nombre}}</div><div class="muted">Consulta de hoy · Ficha {{p.ficha}}</div></div>
+<sc-if value="{{showDispForm}}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div class="fld"><div class="lbl">Medicamento</div>
+<div class="pills"><sc-for list="{{pillsMed}}" as="m" hint-placeholder-count="5"><button type="button" class="pill" style="background: {{m.bg}}; color: {{m.fg}}; border-color: {{m.bd}}" onClick="{{m.pick}}">{{m.nombre}}</button></sc-for></div></div>
+<div class="fld"><div class="lbl">Cantidad ({{unit}})</div>
+<div class="row"><button type="button" class="pill" aria-label="Restar 5" onClick="{{qtyMinus}}">−5</button><div style="font-size:24px;font-weight:700;min-width:64px;text-align:center">{{qty}}</div><button type="button" class="pill" aria-label="Sumar 5" onClick="{{qtyPlus}}">+5</button></div></div>
+<sc-if value="{{hasProp}}" hint-placeholder-val="{{ true }}">
+<div class="card">
+<div class="lbl">Lote propuesto (el que vence primero)</div>
+<div class="row"><span style="font-weight:700">{{prop.lote}}</span><span class="chip" style="background: {{prop.chipBg}}; color: {{prop.chipFg}}">{{prop.chipText}}</span></div>
+<div class="muted">Vence {{prop.label}} · Existencia del lote: {{prop.stock}}</div>
+<div style="font-size:14px;font-weight:500;color:#0F172A">{{prop.desc}}</div>
+<sc-if value="{{prop.warn}}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FEF3C7;color:#713F12;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:700">Atención: este lote vence en menos de 3 meses. Se propone primero para que no se desperdicie.</div></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FEE2E2;color:#7F1D1D;padding:12px 16px;border-radius:12px;font-size:15px;font-weight:500">{{errMsg}}</div></sc-if>
+<button type="button" class="btn btnp" disabled="{{noConfirm}}" onClick="{{confirmDisp}}">Confirmar entrega</button>
+</div>
+</sc-if>
+<sc-if value="{{hasDone}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div class="card" style="background:#DCFCE7;border-color:#86EFAC;color:#14532D">
+<div style="font-size:18px;font-weight:700">Entrega registrada</div>
+<div>{{done.qty}} × {{done.med}}</div>
+<div>Lote {{done.lote}}. La salida quedó anotada en el kardex.</div>
+</div>
+<sc-if value="{{done.bajo}}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FEF3C7;color:#713F12;padding:12px 16px;border-radius:12px;font-size:15px;font-weight:500">La existencia llegó al mínimo: {{done.total}} (mínimo {{done.min}}).</div></sc-if>
+<button type="button" class="btn btnp" onClick="{{newDisp}}">Registrar otra entrega</button>
+<button type="button" class="btn" onClick="{{goBack}}">Terminar</button>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isLotes}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+<button type="button" class="btn btnp" onClick="{{goDispLotes}}">Dispensar</button>
+<button type="button" class="btn" onClick="{{goIngresar}}">Ingresar lote</button>
+</div>
+<div class="pills"><sc-for list="{{filtros}}" as="f" hint-placeholder-count="4"><button type="button" class="pill" style="background: {{f.bg}}; color: {{f.fg}}; border-color: {{f.bd}}" onClick="{{f.pick}}">{{f.nombre}}</button></sc-for></div>
+<sc-for list="{{lotesItems}}" as="l" hint-placeholder-count="4">
+<button type="button" class="item" onClick="{{l.pick}}">
+<span style="font-weight:700">{{l.nombre}}</span>
+<span class="row"><span>Lote {{l.lote}}</span><span class="chip" style="background: {{l.chipBg}}; color: {{l.chipFg}}">{{l.chipText}}</span></span>
+<span class="muted">Vence {{l.label}} · Existencia: {{l.stock}}</span>
+</button>
+</sc-for>
+<div class="card" style="gap:6px"><div class="lbl">¿Qué significa cada color?</div>
+<div class="row"><span class="chip" style="background:#DCFCE7;color:#14532D">Verde</span><span class="muted">Más de 6 meses para vencer</span></div>
+<div class="row"><span class="chip" style="background:#FEF3C7;color:#713F12">Amarillo</span><span class="muted">De 3 a 6 meses para vencer</span></div>
+<div class="row"><span class="chip" style="background:#FEE2E2;color:#7F1D1D">Rojo</span><span class="muted">Menos de 3 meses o vencido</span></div></div>
+<div class="muted">Toque un lote para ver su kardex.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isIngresar}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div class="fld"><label class="lbl" for="l1">Medicamento *</label>
+<select id="l1" class="inp"><option>Acetaminofén 500 mg</option><option>Amoxicilina 500 mg</option><option>Ibuprofeno 400 mg</option><option>Metformina 850 mg</option><option>Enalapril 10 mg</option></select></div>
+<div class="fld"><label class="lbl" for="l2">Número de lote *</label><input id="l2" class="inp" type="text"></div>
+<div class="fld"><label class="lbl" for="l3">Fecha de vencimiento *</label><input id="l3" class="inp" type="date"></div>
+<div class="fld"><label class="lbl" for="l4">Cantidad *</label><input id="l4" class="inp" type="text" inputmode="numeric"></div>
+<div class="fld"><label class="lbl" for="l5">Presentación y concentración</label><input id="l5" class="inp" type="text"></div>
+<div class="fld"><label class="lbl" for="l6">Proveedor o donante</label><input id="l6" class="inp" type="text"></div>
+<div class="fld"><label class="lbl" for="l7">Fecha de ingreso</label><input id="l7" class="inp" type="date"></div>
+<div class="muted">El color del semáforo se calcula al guardar. Si la fecha ya pasó, el sistema avisa y deja el lote en rojo.</div>
+<button type="button" class="btn btnp" onClick="{{saveLote}}">Guardar lote</button>
+<button type="button" class="btn" onClick="{{goMed}}">Cancelar</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isKardex}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div class="card">
+<div style="font-size:18px;font-weight:700">{{kl.nombre}}</div>
+<div class="row"><span>Lote {{kl.lote}}</span><span class="chip" style="background: {{kl.chipBg}}; color: {{kl.chipFg}}">{{kl.chipText}}</span></div>
+<div class="muted">Vence {{kl.label}}</div>
+<div style="font-size:20px;font-weight:700">Existencia: {{kl.stock}}</div>
+</div>
+<sc-for list="{{kRows}}" as="r" hint-placeholder-count="3">
+<div class="card" style="gap:6px"><div class="row"><span class="chip" style="background: {{r.bg}}; color: {{r.fg}}">{{r.tipo}}</span><span style="font-weight:700">{{r.cant}}</span></div><div class="muted">{{r.nota}}</div></div>
+</sc-for>
+<div class="muted">La existencia es la suma de los movimientos del kardex.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isReportes}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div class="card"><div class="lbl">Período</div>
+<div class="pills"><sc-for list="{{periodos}}" as="p" hint-placeholder-count="3"><button type="button" class="pill" style="background: {{p.bg}}; color: {{p.fg}}; border-color: {{p.bd}}" onClick="{{p.pick}}">{{p.nombre}}</button></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+<div class="fld"><label class="lbl" for="rd">Desde</label><input id="rd" class="inp" type="date" value="{{desde}}" onChange="{{onDesde}}"></div>
+<div class="fld"><label class="lbl" for="rh">Hasta</label><input id="rh" class="inp" type="date" value="{{hasta}}" onChange="{{onHasta}}"></div>
+</div>
+<div class="muted">{{periodoTxt}}</div></div>
+<div class="pills"><sc-for list="{{reportes}}" as="r" hint-placeholder-count="3"><button type="button" class="pill" style="background: {{r.bg}}; color: {{r.fg}}; border-color: {{r.bd}}" onClick="{{r.pick}}">{{r.nombre}}</button></sc-for></div>
+<div class="card">
+<h2 class="h2">{{repTitle}}</h2>
+<sc-for list="{{repRows}}" as="w" hint-placeholder-count="4"><div class="row" style="justify-content:space-between"><span>{{w.a}}</span><span style="font-weight:700;text-align:right">{{w.b}}</span></div></sc-for>
+</div>
+<div class="muted">Datos ficticios de demostración.</div>
+<button type="button" class="btn btnp" style="min-height:56px" onClick="{{exportar}}">Descargar reporte semanal en PDF</button>
+</div>
+</sc-if>
+
+</div>
+</sc-if>
+
+<sc-if value="{{showNav}}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:#fff;border-top:1px solid #CBD5E1">
+<button type="button" class="navbtn" style="color: {{navHomeC}}; font-weight: {{navHomeW}}" onClick="{{goHome}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg><span>Inicio</span></button>
+<button type="button" class="navbtn" style="color: {{navPacC}}; font-weight: {{navPacW}}" onClick="{{goPac}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><path d="M16 4.6a3.5 3.5 0 010 6.8"></path><path d="M18 14.5c2.2.6 3.5 2.4 3.5 5"></path></svg><span>Pacientes</span></button>
+<button type="button" class="navbtn" style="color: {{navMedC}}; font-weight: {{navMedW}}" onClick="{{goMed}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-35 12 12)"></rect><path d="M9.6 8.5l4.8 7"></path></svg><span>Medicamentos</span></button>
+<button type="button" class="navbtn" style="color: {{navRepC}}; font-weight: {{navRepW}}" onClick="{{goRep}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-6"></path><path d="M12 20V5"></path><path d="M19 20v-9"></path></svg><span>Reportes</span></button>
+</div>
+</sc-if>
+
+<sc-if value="{{showFab}}" hint-placeholder-val="{{ false }}">
+<button type="button" class="btn btnp" onClick="{{newPatient}}" style="position:absolute;right:16px;bottom:76px;width:auto;min-height:56px;border-radius:28px;padding:0 20px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>Nuevo paciente</button>
+</sc-if>
+
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="position:absolute;left:16px;right:16px;bottom:84px;background:#0F172A;color:#FFFFFF;padding:12px 16px;border-radius:12px;font-size:15px">{{toast}}</div>
+</sc-if>
+
+</div>
+
+</template>
+<script>
+
+// ---- Mini ejecutor para la plantilla (reemplaza al visor de diseño) ----
+class DCLogic {
+  constructor() { this.state = {}; this.props = {}; this._q = false; }
+  setState(o) {
+    Object.assign(this.state, o);
+    if (this._q) return;
+    this._q = true;
+    Promise.resolve().then(() => { this._q = false; draw(); });
+  }
+}
+
+
+const TODAY = '2026-10-28';
+
+function monthsLeft(d) {
+  const a = new Date(TODAY + 'T00:00:00');
+  const b = new Date(d + 'T00:00:00');
+  return (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()) - (b.getDate() < a.getDate() ? 1 : 0);
+}
+
+function estadoDe(l) {
+  if (l.vence < TODAY) return 'vencido';
+  const m = monthsLeft(l.vence);
+  if (m < 3) return 'rojo';
+  if (m <= 6) return 'amarillo';
+  return 'verde';
+}
+
+const ESTILO = {
+  verde: { bg: '#DCFCE7', fg: '#14532D', t: 'Verde' },
+  amarillo: { bg: '#FEF3C7', fg: '#713F12', t: 'Amarillo' },
+  rojo: { bg: '#FEE2E2', fg: '#7F1D1D', t: 'Rojo' },
+  vencido: { bg: '#7F1D1D', fg: '#FFFFFF', t: 'Rojo · Vencido' }
+};
+
+const DESC = {
+  verde: 'Verde: faltan más de 6 meses para vencer.',
+  amarillo: 'Amarillo: faltan de 3 a 6 meses para vencer.',
+  rojo: 'Rojo: faltan menos de 3 meses. Dispensar primero.',
+  vencido: 'Vencido: bloqueado, no se puede dispensar.'
+};
+
+const PATIENTS = [
+  { id: 1, nombre: 'María Elena López Pérez', exp: '0001', nac: '12/03/1985', edad: '41 años', ficha: 'Adulto y adulto mayor', cronico: 'Hipertensión', control: 'Próximo control: 29/10/2026',
+    consultas: [{ f: '14/10/2026', t: 'Control de presión arterial' }, { f: '02/09/2026', t: 'Dolor de cabeza y malestar general' }],
+    entregas: [{ f: '14/10/2026', t: 'Enalapril 10 mg · 30 tabletas' }],
+    vacunas: [{ f: '05/2026', t: 'Influenza · dosis anual' }] },
+  { id: 2, nombre: 'José Andrés Tzoc Mendoza', exp: '0002', nac: '05/05/2023', edad: '3 años', ficha: 'Lactante y niñez', cronico: '', control: '',
+    consultas: [{ f: '20/10/2026', t: 'Tos y fiebre' }],
+    entregas: [{ f: '20/10/2026', t: 'Sales de rehidratación oral · 5 sobres' }],
+    vacunas: [{ f: '05/2026', t: 'SPR · refuerzo' }] },
+  { id: 3, nombre: 'Ana Lucía Xicay Cuc', exp: '0003', nac: '18/09/2005', edad: '21 años', ficha: 'Adolescente y joven', cronico: '', control: '',
+    consultas: [{ f: '08/10/2026', t: 'Dolor de garganta' }],
+    entregas: [{ f: '08/10/2026', t: 'Amoxicilina 500 mg · 21 cápsulas' }],
+    vacunas: [{ f: '03/2026', t: 'Td · refuerzo' }] },
+  { id: 4, nombre: 'Carlos Humberto Ajanel Sicay', exp: '0004', nac: '03/01/1951', edad: '75 años', ficha: 'Adulto y adulto mayor', cronico: 'Diabetes', control: 'Próximo control: 30/10/2026',
+    consultas: [{ f: '16/10/2026', t: 'Control de azúcar en sangre' }],
+    entregas: [{ f: '16/10/2026', t: 'Metformina 850 mg · 60 tabletas' }],
+    vacunas: [{ f: '05/2026', t: 'Influenza · dosis anual' }] }
+];
+
+const MEDS = [
+  { id: 'ace', nombre: 'Acetaminofén 500 mg', pres: 'tabletas', min: 100 },
+  { id: 'amo', nombre: 'Amoxicilina 500 mg', pres: 'cápsulas', min: 100 },
+  { id: 'ibu', nombre: 'Ibuprofeno 400 mg', pres: 'tabletas', min: 50 },
+  { id: 'met', nombre: 'Metformina 850 mg', pres: 'tabletas', min: 30 },
+  { id: 'ena', nombre: 'Enalapril 10 mg', pres: 'tabletas', min: 50 }
+];
+
+const LOTES = [
+  { id: 'AC2301', med: 'ace', lote: 'AC-2301', vence: '2027-06-30', label: 'jun 2027', ing: 600, st0: 480, prov: 'Donación' },
+  { id: 'AM2288', med: 'amo', lote: 'AM-2288', vence: '2027-02-28', label: 'feb 2027', ing: 200, st0: 120, prov: 'Compra' },
+  { id: 'AM2310', med: 'amo', lote: 'AM-2310', vence: '2027-09-30', label: 'sep 2027', ing: 200, st0: 200, prov: 'Donación' },
+  { id: 'IB2199', med: 'ibu', lote: 'IB-2199', vence: '2026-11-30', label: 'nov 2026', ing: 100, st0: 60, prov: 'Compra' },
+  { id: 'ME2175', med: 'met', lote: 'ME-2175', vence: '2026-09-30', label: 'sep 2026', ing: 80, st0: 40, prov: 'Donación' },
+  { id: 'EN2302', med: 'ena', lote: 'EN-2302', vence: '2027-08-31', label: 'ago 2027', ing: 200, st0: 150, prov: 'Compra' }
+];
+
+const TITULOS = { home: 'Inicio', search: 'Pacientes', newPatient: 'Nuevo paciente', patient: 'Expediente', consulta: 'Nueva consulta', receta: 'Receta', dispensar: 'Dispensar', lotes: 'Medicamentos', ingresar: 'Ingresar lote', kardex: 'Kardex', reportes: 'Reportes' };
+const PRINCIPAL = { home: 'home', search: 'pac', newPatient: 'pac', patient: 'pac', consulta: 'pac', receta: 'pac', lotes: 'med', dispensar: 'med', ingresar: 'med', kardex: 'med', reportes: 'rep' };
+
+const DEFAULTS = {
+  screen: 'login', patientId: 1, q: '', offline: false, pending: 0, recetaStep: 'camera', recetaAdjunta: false,
+  medSel: 'amo', qty: 20, stock: { AC2301: 480, AM2288: 120, AM2310: 200, IB2199: 60, ME2175: 40, EN2302: 150 },
+  movs: [], dispDone: null, reporte: 'meds', periodo: 'semana', desde: '2026-10-19', hasta: '2026-10-25', toast: '', loteId: 'AM2288', filtro: 'todos', dispFrom: 'lotes'
+};
+
+function pillStyle(on) {
+  return on ? { bg: '#0F766E', fg: '#FFFFFF', bd: '#0F766E' } : { bg: '#FFFFFF', fg: '#0F172A', bd: '#64748B' };
+}
+
+class Component extends DCLogic {
+  renderVals() {
+    const s = Object.assign({}, DEFAULTS, this.state);
+    const set = (o) => this.setState(o);
+    const flash = (msg) => {
+      this.setState({ toast: msg });
+      setTimeout(() => this.setState({ toast: '' }), 2800);
+    };
+    const go = (screen, extra) => set(Object.assign({ screen: screen, toast: '' }, extra || {}));
+    const pend = s.offline ? s.pending + 1 : s.pending;
+    const tail = s.offline ? ' Se enviará al recuperar la conexión.' : '';
+    const save = (msg, next, extra) => {
+      set(Object.assign({ screen: next, pending: pend }, extra || {}));
+      flash(msg + tail);
+    };
+    const stock = s.stock;
+    const pat = PATIENTS.find((x) => x.id === s.patientId) || PATIENTS[0];
+    const med = MEDS.find((x) => x.id === s.medSel) || MEDS[0];
+    const screen = s.screen;
+    const cnt = (e) => LOTES.filter((l) => estadoDe(l) === e).length;
+
+    // Dispensación
+    const lotesMed = LOTES.filter((l) => l.med === med.id).sort((a, b) => (a.vence < b.vence ? -1 : 1));
+    const vigentes = lotesMed.filter((l) => stock[l.id] > 0 && estadoDe(l) !== 'vencido');
+    const propL = vigentes[0] || null;
+    const propE = propL ? estadoDe(propL) : 'verde';
+    const propS = ESTILO[propE];
+    const prop = propL
+      ? { lote: propL.lote, label: propL.label, stock: stock[propL.id], chipBg: propS.bg, chipFg: propS.fg, chipText: propS.t, warn: propE === 'rojo', desc: DESC[propE] }
+      : { lote: '', label: '', stock: 0, chipBg: '#FFFFFF', chipFg: '#0F172A', chipText: '', warn: false, desc: '' };
+    let errMsg = '';
+    if (!propL) errMsg = 'No hay lotes vigentes de este medicamento. Los lotes vencidos están bloqueados.';
+    else if (s.qty > stock[propL.id]) errMsg = 'La cantidad supera la existencia del lote (' + stock[propL.id] + ').';
+    const noConfirm = !propL || s.qty > stock[propL.id];
+    const confirmDisp = () => {
+      if (noConfirm) return;
+      const ns = Object.assign({}, stock);
+      ns[propL.id] = ns[propL.id] - s.qty;
+      const total = lotesMed.reduce((t, l) => t + ns[l.id], 0);
+      set({
+        stock: ns, pending: pend, toast: '',
+        movs: [{ lote: propL.id, cant: -s.qty, paciente: pat.nombre, pid: pat.id, med: med.nombre }].concat(s.movs),
+        dispDone: { med: med.nombre, lote: propL.lote, qty: s.qty, total: total, min: med.min, bajo: total <= med.min }
+      });
+    };
+    const pillsMed = MEDS.map((m) => {
+      const st = pillStyle(m.id === med.id);
+      return { nombre: m.nombre, bg: st.bg, fg: st.fg, bd: st.bd, pick: () => set({ medSel: m.id, qty: 20, dispDone: null }) };
+    });
+
+    // Expediente
+    const entregas = [].concat(
+      s.movs.filter((m) => m.pid === pat.id).map((m) => ({ f: 'Hoy', t: m.med + ' · ' + (-m.cant) + ' unidades' })),
+      pat.entregas
+    );
+    const p = Object.assign({}, pat, { hasCron: !!pat.cronico });
+
+    // Búsqueda
+    const ql = s.q.trim().toLowerCase();
+    const found = PATIENTS.filter((x) => !ql || x.nombre.toLowerCase().indexOf(ql) >= 0 || x.exp.indexOf(ql) >= 0).map((x) => ({
+      nombre: x.nombre, sub: 'Exp. ' + x.exp + ' · ' + x.ficha, cronico: x.cronico, hasCron: !!x.cronico,
+      pick: () => go('patient', { patientId: x.id })
+    }));
+
+    // Lotes
+    const orden = LOTES.slice().sort((a, b) => (a.vence < b.vence ? -1 : 1));
+    const lotesItems = orden.filter((l) => {
+      const e = estadoDe(l);
+      if (s.filtro === 'todos') return true;
+      if (s.filtro === 'rojo') return e === 'rojo' || e === 'vencido';
+      return e === s.filtro;
+    }).map((l) => {
+      const st = ESTILO[estadoDe(l)];
+      const m = MEDS.find((x) => x.id === l.med);
+      return { nombre: m.nombre, lote: l.lote, label: l.label, stock: stock[l.id], chipBg: st.bg, chipFg: st.fg, chipText: st.t, pick: () => go('kardex', { loteId: l.id }) };
+    });
+    const filtros = [['todos', 'Todos'], ['verde', 'Verde'], ['amarillo', 'Amarillo'], ['rojo', 'Rojo']].map((f) => {
+      const st = pillStyle(s.filtro === f[0]);
+      return { nombre: f[1], bg: st.bg, fg: st.fg, bd: st.bd, pick: () => set({ filtro: f[0] }) };
+    });
+
+    // Kardex
+    const kLote = LOTES.find((l) => l.id === s.loteId) || LOTES[0];
+    const kSt = ESTILO[estadoDe(kLote)];
+    const kMed = MEDS.find((x) => x.id === kLote.med);
+    const kl = { nombre: kMed.nombre, lote: kLote.lote, label: kLote.label, stock: stock[kLote.id], chipBg: kSt.bg, chipFg: kSt.fg, chipText: kSt.t };
+    const kRows = [{ tipo: 'ENTRADA', cant: '+' + kLote.ing, nota: 'Ingreso del lote · ' + kLote.prov, bg: '#DCFCE7', fg: '#14532D' }];
+    const prev = kLote.ing - kLote.st0;
+    if (prev > 0) kRows.push({ tipo: 'SALIDA', cant: '−' + prev, nota: 'Entregas anteriores (resumen)', bg: '#FEE2E2', fg: '#7F1D1D' });
+    s.movs.filter((m) => m.lote === kLote.id).slice().reverse().forEach((m) => {
+      kRows.push({ tipo: 'SALIDA', cant: '−' + (-m.cant), nota: 'Entregado a ' + m.paciente, bg: '#FEE2E2', fg: '#7F1D1D' });
+    });
+
+    // Reportes
+    const totalMed = (m) => LOTES.filter((l) => l.med === m.id).reduce((t, l) => t + stock[l.id], 0);
+    const entregado = (m) => LOTES.filter((l) => l.med === m.id).reduce((t, l) => t + (l.ing - stock[l.id]), 0);
+    let repRows = [];
+    let repTitle = '';
+    if (s.reporte === 'meds') {
+      repTitle = 'Medicamentos entregados (según el kardex)';
+      repRows = MEDS.map((m) => ({ a: m.nombre, b: entregado(m) + ' unidades' }));
+    } else if (s.reporte === 'exist') {
+      repTitle = 'Existencias por medicamento';
+      repRows = MEDS.map((m) => ({ a: m.nombre, b: totalMed(m) + ' · ' + (totalMed(m) <= m.min ? 'Bajo el mínimo' : 'Suficiente') }));
+    } else {
+      repTitle = 'Consultas por mes';
+      repRows = [{ a: 'Julio 2026', b: '342' }, { a: 'Agosto 2026', b: '361' }, { a: 'Septiembre 2026', b: '328' }];
+    }
+    const PER = { semana: ['2026-10-19', '2026-10-25'], mes: ['2026-10-01', '2026-10-31'] };
+    const periodos = [['semana', 'Semanal'], ['mes', 'Mensual'], ['otro', 'Personalizado']].map((r) => {
+      const st = pillStyle(s.periodo === r[0]);
+      return { nombre: r[1], bg: st.bg, fg: st.fg, bd: st.bd, pick: () => set(PER[r[0]] ? { periodo: r[0], desde: PER[r[0]][0], hasta: PER[r[0]][1] } : { periodo: 'otro' }) };
+    });
+    const fmt = (d) => d.slice(8) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4);
+    const periodoTxt = (s.periodo === 'semana' ? 'Reporte semanal' : s.periodo === 'mes' ? 'Reporte mensual' : 'Reporte por fechas') + ': del ' + fmt(s.desde) + ' al ' + fmt(s.hasta);
+    const reportes = [['meds', 'Entregados'], ['exist', 'Existencias'], ['cons', 'Consultas']].map((r) => {
+      const st = pillStyle(s.reporte === r[0]);
+      return { nombre: r[1], bg: st.bg, fg: st.fg, bd: st.bd, pick: () => set({ reporte: r[0] }) };
+    });
+
+    // Navegación
+    const principal = PRINCIPAL[screen] || '';
+    const navC = (k) => (principal === k ? '#0F766E' : '#475569');
+    const navW = (k) => (principal === k ? '700' : '400');
+    const mainScreens = { home: 1, search: 1, lotes: 1, reportes: 1 };
+    const backMap = { newPatient: 'search', patient: 'search', consulta: 'patient', receta: 'consulta', dispensar: s.dispFrom === 'patient' ? 'patient' : 'lotes', ingresar: 'lotes', kardex: 'lotes' };
+
+    return {
+      // pantallas
+      isLogin: screen === 'login', isHome: screen === 'home', isSearch: screen === 'search', isNewPatient: screen === 'newPatient',
+      isPatient: screen === 'patient', isConsulta: screen === 'consulta', isReceta: screen === 'receta', isDisp: screen === 'dispensar',
+      isLotes: screen === 'lotes', isIngresar: screen === 'ingresar', isKardex: screen === 'kardex', isReportes: screen === 'reportes',
+      showHeader: screen !== 'login', showBack: screen !== 'login' && !mainScreens[screen], showNav: !!mainScreens[screen],
+      showFab: screen === 'search', title: TITULOS[screen] || '',
+      // conexión
+      offline: s.offline, pending: s.pending,
+      syncShort: s.offline ? 'Sin conexión' + (s.pending ? ' · ' + s.pending : '') : 'En línea',
+      syncBg: s.offline ? '#FEF3C7' : '#CCFBF1', syncFg: s.offline ? '#713F12' : '#134E4A',
+      syncText: s.offline ? 'Sin conexión. Hay ' + s.pending + ' cambios pendientes de enviar.' : 'Todo está sincronizado.',
+      syncBtn: s.offline ? 'Volver a conectar' : 'Simular sin conexión',
+      toggleOffline: () => {
+        if (s.offline) {
+          set({ offline: false, pending: 0 });
+          flash('Conexión recuperada. Datos sincronizados.');
+        } else {
+          set({ offline: true });
+          flash('Modo sin conexión (simulado). Los cambios se guardan en el dispositivo.');
+        }
+      },
+      // navegación
+      navHomeC: navC('home'), navHomeW: navW('home'), navPacC: navC('pac'), navPacW: navW('pac'),
+      navMedC: navC('med'), navMedW: navW('med'), navRepC: navC('rep'), navRepW: navW('rep'),
+      login: () => go('home'), goHome: () => go('home'), goPac: () => go('search'), goMed: () => go('lotes'), goRep: () => go('reportes'),
+      goBack: () => go(backMap[screen] || 'home'),
+      newPatient: () => go('newPatient'),
+      savePatient: () => save('Paciente registrado.', 'search'),
+      goDispLotes: () => go('dispensar', { dispFrom: 'lotes', dispDone: null, qty: 20 }),
+      goDispPat: () => go('dispensar', { dispFrom: 'patient', dispDone: null, qty: 20 }),
+      goIngresar: () => go('ingresar'),
+      saveLote: () => save('Lote registrado y entrada anotada en el kardex.', 'lotes'),
+      // inicio
+      nVenc: cnt('vencido'), nRojo: cnt('rojo'), nAma: cnt('amarillo'),
+      // búsqueda
+      q: s.q, onSearch: (e) => set({ q: e.target.value }), found: found, noFound: found.length === 0,
+      // expediente y consulta
+      p: p, entregas: entregas,
+      newConsulta: () => go('consulta', { recetaAdjunta: false }),
+      saveConsulta: () => save('Consulta guardada.', 'patient'),
+      recetaAdjunta: s.recetaAdjunta, noReceta: !s.recetaAdjunta,
+      // receta
+      goReceta: () => go('receta', { recetaStep: 'camera' }),
+      isCamara: s.recetaStep === 'camera', isPreview: s.recetaStep === 'preview',
+      tomarFoto: () => set({ recetaStep: 'preview' }), repetirFoto: () => set({ recetaStep: 'camera' }),
+      usarFoto: () => { set({ screen: 'consulta', recetaAdjunta: true }); flash('Receta adjunta a la consulta.'); },
+      // dispensar
+      showDispForm: !s.dispDone, hasDone: !!s.dispDone,
+      done: s.dispDone || { med: '', lote: '', qty: 0, total: 0, min: 0, bajo: false },
+      pillsMed: pillsMed, unit: med.pres, qty: s.qty,
+      qtyMinus: () => set({ qty: Math.max(5, s.qty - 5) }), qtyPlus: () => set({ qty: s.qty + 5 }),
+      hasProp: !!propL, prop: prop, hasErr: errMsg !== '', errMsg: errMsg, noConfirm: noConfirm, confirmDisp: confirmDisp,
+      newDisp: () => set({ dispDone: null, qty: 20 }),
+      // lotes y kardex
+      filtros: filtros, lotesItems: lotesItems, kl: kl, kRows: kRows,
+      // reportes
+      reportes: reportes, repRows: repRows, repTitle: repTitle, periodos: periodos, periodoTxt: periodoTxt, desde: s.desde, hasta: s.hasta,
+      onDesde: (e) => set({ desde: e.target.value, periodo: 'otro' }), onHasta: (e) => set({ hasta: e.target.value, periodo: 'otro' }),
+      exportar: () => flash('PDF descargado (demostración). ' + periodoTxt + '.'),
+      // aviso
+      toast: s.toast, hasToast: s.toast !== ''
+    };
+  }
+}
+
+
+const comp = new Component();
+const tplEl = document.getElementById('tpl');
+const root = document.getElementById('app');
+const HOLE = /\{\{\s*([\w.$]+)\s*\}\}/g;
+const ONE = /^\s*\{\{\s*([\w.$]+)\s*\}\}\s*$/;
+function look(path, scope) {
+  return path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), scope);
+}
+function interp(str, scope) {
+  return str.replace(HOLE, (_, p) => { const v = look(p, scope); return v == null ? '' : String(v); });
+}
+function build(node, scope, parent) {
+  if (node.nodeType === 3) { parent.appendChild(document.createTextNode(interp(node.nodeValue, scope))); return; }
+  if (node.nodeType !== 1) return;
+  const tag = node.tagName.toLowerCase();
+  if (tag === 'sc-if') {
+    const m = ONE.exec(node.getAttribute('value') || '');
+    if (m && look(m[1], scope)) node.childNodes.forEach((c) => build(c, scope, parent));
+    return;
+  }
+  if (tag === 'sc-for') {
+    const m = ONE.exec(node.getAttribute('list') || '');
+    const as = node.getAttribute('as');
+    const list = (m && look(m[1], scope)) || [];
+    list.forEach((item) => {
+      const sub = Object.assign({}, scope, { [as]: item });
+      node.childNodes.forEach((c) => build(c, sub, parent));
+    });
+    return;
+  }
+  const el = document.createElementNS(node.namespaceURI, node.localName);
+  for (const a of Array.from(node.attributes)) {
+    const name = a.name;
+    if (name.startsWith('hint-')) continue;
+    const one = ONE.exec(a.value);
+    if (/^on/i.test(name)) {
+      const fn = one && look(one[1], scope);
+      if (typeof fn === 'function') el.addEventListener(name.slice(2).toLowerCase() === 'click' ? 'click' : name.slice(2).toLowerCase(), fn);
+      continue;
+    }
+    if (one && (name === 'disabled' || name === 'checked' || name === 'selected')) {
+      if (look(one[1], scope)) el.setAttribute(name, '');
+      continue;
+    }
+    el.setAttribute(name, interp(a.value, scope));
+  }
+  node.childNodes.forEach((c) => build(c, scope, el));
+  parent.appendChild(el);
+}
+function draw() {
+  const keep = {};
+  root.querySelectorAll('input[id],textarea[id],select[id]').forEach((e) => { keep[e.id] = e.value; });
+  const act = document.activeElement && document.activeElement.id;
+  const vals = comp.renderVals();
+  const frag = document.createDocumentFragment();
+  tplEl.content.childNodes.forEach((c) => build(c, vals, frag));
+  root.replaceChildren(frag);
+  root.querySelectorAll('input[id],textarea[id],select[id]').forEach((e) => {
+    if (e.id in keep && !e.hasAttribute('value')) e.value = keep[e.id];
+  });
+  if (act) { const e = document.getElementById(act); if (e) e.focus(); }
+}
+draw();
+
+</script>
+</body>
+</html>

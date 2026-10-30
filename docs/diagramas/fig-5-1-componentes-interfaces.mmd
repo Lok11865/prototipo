@@ -1,0 +1,38 @@
+flowchart LR
+  subgraph UI[Presentación]
+    PAN[Pantallas]
+  end
+  subgraph MOD[Módulos de dominio]
+    PAC[Pacientes]
+    CON[Consultas y fichas]
+    REC[Recetas]
+    INV[Inventario de lotes]
+    DIS[Dispensación]
+    REP[Reportes]
+  end
+  subgraph TRA[Transversales]
+    SEG[Seguridad y usuarios]
+    BIT[Bitácora]
+    SIN[Sincronización]
+  end
+  PAN --> PAC
+  PAN --> CON
+  PAN --> REC
+  PAN --> INV
+  PAN --> DIS
+  PAN --> REP
+  CON -->|IPacientes| PAC
+  REC -->|IConsultas| CON
+  DIS -->|IConsultas| CON
+  DIS -->|ILotes, IKardex| INV
+  REP -->|IPacientes, IConsultas, IDispensacion, ILotes| DIS
+  PAC -->|ISeguridad| SEG
+  INV -->|ISeguridad| SEG
+  PAC -->|IBitacora| BIT
+  CON -->|IBitacora| BIT
+  DIS -->|IBitacora| BIT
+  BIT -->|ISeguridad| SEG
+  PAC -.->|ICola| SIN
+  CON -.->|ICola| SIN
+  INV -.->|ICola| SIN
+  DIS -.->|ICola| SIN

@@ -1,0 +1,8 @@
+flowchart TD
+  A((Inicio)) --> B[En el expediente, toca Nueva consulta]
+  B --> C[Completa la ficha sugerida: motivo, signos vitales, diagnóstico y tratamiento]
+  C --> D[Toca Adjuntar receta y fotografía la receta]
+  D --> E{¿Se ve bien en la vista previa?}
+  E -- No --> D
+  E -- Sí --> F[Guarda la consulta]
+  F --> Z((Fin))

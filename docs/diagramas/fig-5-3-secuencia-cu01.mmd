@@ -1,0 +1,26 @@
+sequenceDiagram
+  actor U as Usuario
+  participant P as Pantalla
+  participant VM as ViewModel
+  participant RP as RegistrarPaciente
+  participant R as RepositorioPacientes
+  participant DB as SQLite
+  participant B as Bitácora
+  U->>P: Completa el formulario y toca Guardar
+  P->>VM: guardarPaciente(datos)
+  VM->>RP: ejecutar(datos)
+  RP->>R: buscarCoincidencias(nombre, documento, fechaNacimiento)
+  R->>DB: consulta por índices
+  DB-->>R: coincidencias
+  alt Hay posible duplicado
+    R-->>RP: coincidencias
+    RP-->>VM: advertencia de duplicado
+    VM-->>P: pide confirmar
+  else Sin coincidencias
+    RP->>RP: crea Paciente con id único y valida RN-02
+    RP->>R: guardar(paciente) y encola CambioPendiente
+    R->>DB: inserta paciente y cambio
+    RP->>B: registrar(creación)
+    RP-->>VM: paciente creado
+    VM-->>P: muestra el expediente
+  end

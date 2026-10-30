@@ -1,0 +1,16 @@
+sequenceDiagram
+  participant S as Sincronización
+  participant C as Cola local
+  participant A as API REST
+  participant D as PostgreSQL
+  participant L as Base local
+  S->>S: detecta conexión
+  S->>C: cambios pendientes, en orden
+  S->>A: POST /sync/push con el lote de cambios
+  A->>A: valida el token y los permisos
+  A->>D: guarda y detecta conflictos (ADR-07)
+  A-->>S: confirmación o rechazo por cada cambio
+  S->>C: marca los cambios confirmados
+  S->>A: GET /sync/pull?desde=última marca
+  A-->>S: cambios hechos en otros dispositivos
+  S->>L: aplica los cambios

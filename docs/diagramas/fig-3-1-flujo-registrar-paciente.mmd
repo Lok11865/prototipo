@@ -1,0 +1,9 @@
+flowchart TD
+  A((Inicio)) --> B[Pacientes: buscar por nombre o documento]
+  B --> C{¿Existe?}
+  C -- Sí --> D[Abre el expediente]
+  C -- No --> E[Toca Nuevo paciente y completa nombre y fecha de nacimiento]
+  E --> F[El sistema sugiere la ficha y verifica duplicados]
+  F --> G[Guarda y abre el expediente]
+  D --> Z((Fin))
+  G --> Z

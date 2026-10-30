@@ -1,0 +1,14 @@
+flowchart TD
+  S01[S01 Inicio de sesión] --> S02[S02 Inicio]
+  S02 --> S03[S03 Buscar paciente]
+  S02 --> S09[S09 Lotes con semáforo]
+  S02 --> S12[S12 Reportes]
+  S02 --> S13[S13 Usuarios, desde el menú Más]
+  S03 --> S04[S04 Nuevo paciente]
+  S03 --> S05[S05 Expediente]
+  S05 --> S06[S06 Consulta con ficha]
+  S06 --> S07[S07 Cámara de receta]
+  S05 --> S08[S08 Dispensar]
+  S09 --> S08
+  S09 --> S10[S10 Ingresar lote]
+  S09 --> S11[S11 Kardex]

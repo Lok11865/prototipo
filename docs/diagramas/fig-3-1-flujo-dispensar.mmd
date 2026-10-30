@@ -1,0 +1,9 @@
+flowchart TD
+  A((Inicio)) --> B[Medicamentos: Dispensar]
+  B --> C[Elige medicamento y cantidad]
+  C --> D[El sistema propone el lote que vence primero, con su color]
+  D --> E{¿Acepta el lote?}
+  E -- No --> F[Elige otro lote vigente] --> G
+  E -- Sí --> G[Confirma con el botón]
+  G --> H[Se actualiza la existencia y se anota el kardex]
+  H --> Z((Fin))

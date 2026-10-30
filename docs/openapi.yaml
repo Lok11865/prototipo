@@ -1,0 +1,598 @@
+openapi: 3.0.3
+info:
+  title: API de CantelSaludable
+  version: 1.0.0
+  description: API REST del centro de salud. Los identificadores los genera el cliente (UUID, ADR-06).
+servers:
+  - url: https://servidor.ejemplo/api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: Autenticación
+  - name: Pacientes
+  - name: Citas
+  - name: Consultas
+  - name: Recetas
+  - name: Inventario
+  - name: Dispensación
+  - name: Vacunación
+  - name: Reportes
+  - name: Usuarios
+  - name: Sincronización
+  - name: Bitácora
+paths:
+  /auth/login:
+    post:
+      tags: [Autenticación]
+      summary: Inicia sesión y devuelve los tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Credenciales' }
+      responses:
+        '200':
+          description: Sesión iniciada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tokens' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+  /auth/refresh:
+    post:
+      tags: [Autenticación]
+      summary: Renueva el token de acceso
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: Token renovado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tokens' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+  /auth/logout:
+    post:
+      tags: [Autenticación]
+      summary: Cierra la sesión
+      responses:
+        '204': { description: Sesión cerrada }
+  /pacientes:
+    get:
+      tags: [Pacientes]
+      summary: Busca pacientes por nombre, documento o expediente
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+      responses:
+        '200':
+          description: Coincidencias
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Paciente' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+    post:
+      tags: [Pacientes]
+      summary: Registra un paciente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Paciente' }
+      responses:
+        '201':
+          description: Paciente creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Paciente' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '422': { $ref: '#/components/responses/ReglaIncumplida' }
+  /pacientes/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Pacientes]
+      summary: Obtiene un paciente
+      responses:
+        '200':
+          description: Paciente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Paciente' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    put:
+      tags: [Pacientes]
+      summary: Actualiza un paciente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Paciente' }
+      responses:
+        '200': { description: Paciente actualizado }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '422': { $ref: '#/components/responses/ReglaIncumplida' }
+  /citas:
+    get:
+      tags: [Citas]
+      summary: Lista citas
+      parameters:
+        - { name: fecha, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Citas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Cita' }
+    post:
+      tags: [Citas]
+      summary: Programa una cita
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Cita' }
+      responses:
+        '201': { description: Cita programada }
+        '422': { $ref: '#/components/responses/ReglaIncumplida' }
+  /citas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Citas]
+      summary: Reprograma o cancela una cita
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Cita' }
+      responses:
+        '200': { description: Cita actualizada }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /pacientes/{id}/consultas:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Consultas]
+      summary: Lista las consultas de un paciente
+      responses:
+        '200':
+          description: Consultas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Consulta' }
+    post:
+      tags: [Consultas]
+      summary: Registra una consulta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Consulta' }
+      responses:
+        '201': { description: Consulta registrada }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '422': { $ref: '#/components/responses/ReglaIncumplida' }
+  /consultas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Consultas]
+      summary: Actualiza una consulta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Consulta' }
+      responses:
+        '200': { description: Consulta actualizada }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /consultas/{id}/recetas:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Recetas]
+      summary: Sube la imagen de una receta
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [id, imagen]
+              properties:
+                id: { type: string, format: uuid }
+                imagen: { type: string, format: binary }
+      responses:
+        '201': { description: Receta guardada }
+        '413': { description: Imagen demasiado grande }
+  /recetas/{id}/imagen:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Recetas]
+      summary: Descarga la imagen de una receta
+      responses:
+        '200':
+          description: Imagen
+          content:
+            image/jpeg:
+              schema: { type: string, format: binary }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+  /medicamentos:
+    get:
+      tags: [Inventario]
+      summary: Lista el catálogo de medicamentos
+      responses:
+        '200':
+          description: Medicamentos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Medicamento' }
+    post:
+      tags: [Inventario]
+      summary: Crea un medicamento del catálogo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Medicamento' }
+      responses:
+        '201': { description: Medicamento creado }
+  /lotes:
+    get:
+      tags: [Inventario]
+      summary: Lista lotes, con filtro opcional por estado
+      parameters:
+        - name: estado
+          in: query
+          schema: { type: string, enum: [disponible, agotado, vencido, dado_de_baja] }
+      responses:
+        '200':
+          description: Lotes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Lote' }
+    post:
+      tags: [Inventario]
+      summary: Registra el ingreso de un lote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Lote' }
+      responses:
+        '201': { description: Lote registrado }
+        '422': { $ref: '#/components/responses/ReglaIncumplida' }
+  /lotes/{id}/kardex:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Inventario]
+      summary: Consulta el kardex de un lote
+      responses:
+        '200':
+          description: Movimientos del lote
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MovimientoKardex' }
+  /lotes/{id}/ajustes:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Inventario]
+      summary: Registra un ajuste o una baja con motivo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MovimientoKardex' }
+      responses:
+        '201': { description: Ajuste registrado }
+        '422': { $ref: '#/components/responses/ReglaIncumplida' }
+  /dispensaciones:
+    post:
+      tags: [Dispensación]
+      summary: Registra la dispensación de un medicamento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DispensacionNueva' }
+      responses:
+        '201': { description: Dispensación registrada }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '422': { $ref: '#/components/responses/ReglaIncumplida' }
+  /pacientes/{id}/dispensaciones:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Dispensación]
+      summary: Lista lo entregado a un paciente
+      responses:
+        '200':
+          description: Dispensaciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DispensacionNueva' }
+  /pacientes/{id}/vacunaciones:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Vacunación]
+      summary: Registra una vacuna aplicada
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, vacuna, dosis, fecha]
+              properties:
+                id: { type: string, format: uuid }
+                vacuna: { type: string }
+                dosis: { type: string }
+                fecha: { type: string, format: date }
+      responses:
+        '201': { description: Vacunación registrada }
+  /reportes/{tipo}:
+    get:
+      tags: [Reportes]
+      summary: Genera un reporte
+      parameters:
+        - name: tipo
+          in: path
+          required: true
+          schema: { type: string, enum: [consultas, medicamentos_entregados, existencias, vencimientos, vacunacion] }
+        - { name: desde, in: query, schema: { type: string, format: date } }
+        - { name: hasta, in: query, schema: { type: string, format: date } }
+        - name: formato
+          in: query
+          schema: { type: string, enum: [pdf, csv], default: pdf }
+      responses:
+        '200':
+          description: Archivo del reporte
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+  /usuarios:
+    get:
+      tags: [Usuarios]
+      summary: Lista usuarios
+      responses:
+        '200': { description: Usuarios }
+    post:
+      tags: [Usuarios]
+      summary: Crea un usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombreUsuario, contrasena]
+              properties:
+                nombreUsuario: { type: string }
+                contrasena: { type: string, format: password }
+      responses:
+        '201': { description: Usuario creado }
+  /usuarios/{id}/perfiles:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Usuarios]
+      summary: Asigna perfiles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                perfiles:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200': { description: Perfiles asignados }
+  /sync/push:
+    post:
+      tags: [Sincronización]
+      summary: Envía un lote de cambios del cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cambios]
+              properties:
+                cambios:
+                  type: array
+                  items: { $ref: '#/components/schemas/CambioPendiente' }
+      responses:
+        '200':
+          description: Resultado por cambio (confirmado, en conflicto o error)
+  /sync/pull:
+    get:
+      tags: [Sincronización]
+      summary: Descarga los cambios desde una marca de tiempo
+      parameters:
+        - name: desde
+          in: query
+          required: true
+          schema: { type: string, format: date-time }
+      responses:
+        '200': { description: Cambios del servidor }
+  /bitacora:
+    get:
+      tags: [Bitácora]
+      summary: Consulta la bitácora
+      responses:
+        '200': { description: Registros de la bitácora }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    NoAutenticado:
+      description: Sin autenticar
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    SinPermiso:
+      description: Sin permiso para la acción
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NoEncontrado:
+      description: Recurso inexistente
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ReglaIncumplida:
+      description: Regla de negocio incumplida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      properties:
+        codigo: { type: string }
+        mensaje: { type: string }
+    Credenciales:
+      type: object
+      required: [nombreUsuario, contrasena]
+      properties:
+        nombreUsuario: { type: string }
+        contrasena: { type: string, format: password }
+    Tokens:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiraEn: { type: integer }
+    Paciente:
+      type: object
+      required: [id, nombres, apellidos, fechaNacimiento]
+      properties:
+        id: { type: string, format: uuid }
+        numeroExpediente: { type: string }
+        nombres: { type: string }
+        apellidos: { type: string }
+        fechaNacimiento: { type: string, format: date }
+        dpi: { type: string, nullable: true }
+        comunidad: { type: string }
+        telefono: { type: string }
+        contactoEmergencia: { type: string }
+        esCronico: { type: boolean }
+    Cita:
+      type: object
+      required: [id, pacienteId, fechaHora]
+      properties:
+        id: { type: string, format: uuid }
+        pacienteId: { type: string, format: uuid }
+        fechaHora: { type: string, format: date-time }
+        motivo: { type: string }
+        estado: { type: string, enum: [programada, atendida, cancelada, no_asistio] }
+    Consulta:
+      type: object
+      required: [id, fecha]
+      properties:
+        id: { type: string, format: uuid }
+        fecha: { type: string, format: date }
+        grupoFicha: { type: string }
+        motivo: { type: string }
+        diagnostico: { type: string }
+        tratamiento: { type: string }
+        signosVitales:
+          type: object
+          properties:
+            peso: { type: number }
+            talla: { type: number }
+            temperatura: { type: number }
+            presionArterial: { type: string }
+            frecuenciaCardiaca: { type: integer }
+    Medicamento:
+      type: object
+      required: [id, nombre]
+      properties:
+        id: { type: string, format: uuid }
+        nombre: { type: string }
+        presentacion: { type: string }
+        concentracion: { type: string }
+        existenciaMinima: { type: integer }
+    Lote:
+      type: object
+      required: [id, medicamentoId, numeroLote, fechaVencimiento, cantidadIngresada]
+      properties:
+        id: { type: string, format: uuid }
+        medicamentoId: { type: string, format: uuid }
+        numeroLote: { type: string }
+        fechaVencimiento: { type: string, format: date }
+        cantidadIngresada: { type: integer, minimum: 1 }
+        proveedorDonante: { type: string }
+        fechaIngreso: { type: string, format: date }
+    MovimientoKardex:
+      type: object
+      required: [id, tipo, cantidad]
+      properties:
+        id: { type: string, format: uuid }
+        tipo: { type: string, enum: [entrada, salida, ajuste, baja] }
+        cantidad: { type: integer }
+        motivo: { type: string }
+        fecha: { type: string, format: date-time }
+    DispensacionNueva:
+      type: object
+      required: [id, pacienteId, consultaId, loteId, cantidad]
+      properties:
+        id: { type: string, format: uuid }
+        pacienteId: { type: string, format: uuid }
+        consultaId: { type: string, format: uuid }
+        loteId: { type: string, format: uuid }
+        cantidad: { type: integer, minimum: 1 }
+    CambioPendiente:
+      type: object
+      required: [id, entidad, entidadId, operacion]
+      properties:
+        id: { type: string, format: uuid }
+        entidad: { type: string }
+        entidadId: { type: string, format: uuid }
+        operacion: { type: string, enum: [crear, actualizar] }
+        datos: { type: object }
+        creadoEn: { type: string, format: date-time }

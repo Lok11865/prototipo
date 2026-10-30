@@ -1,0 +1,114 @@
+classDiagram
+  class Paciente {
+    -id
+    -numeroExpediente
+    -nombres
+    -apellidos
+    -fechaNacimiento
+    -esCronico
+    +calcularEdad()
+    +grupoDeEdad()
+  }
+  class Consulta {
+    -id
+    -fecha
+    -grupoFicha
+    -diagnostico
+    +asignarFicha()
+    +agregarReceta()
+  }
+  class SignosVitales {
+    -peso
+    -talla
+    -temperatura
+    -presionArterial
+    +validarRangos()
+  }
+  class Cita {
+    -fechaHora
+    -estado
+    +reprogramar()
+    +cancelar()
+  }
+  class Receta {
+    -rutaImagen
+    -capturadaEn
+    +comprimir()
+  }
+  class Vacunacion {
+    -vacuna
+    -dosis
+    -fecha
+  }
+  class Medicamento {
+    -nombre
+    -presentacion
+    -existenciaMinima
+    +estaBajoMinimo()
+  }
+  class Lote {
+    -numeroLote
+    -fechaVencimiento
+    -cantidadIngresada
+    +existenciaActual()
+    +estadoSemaforo()
+  }
+  class MovimientoKardex {
+    -tipo
+    -cantidad
+    -motivo
+    -fecha
+  }
+  class Dispensacion {
+    -cantidad
+    -fecha
+    +validar()
+    +registrar()
+  }
+  class Usuario {
+    -nombreUsuario
+    -activo
+    +autenticar()
+    +tienePermiso()
+  }
+  class Perfil {
+    -nombre
+    -permisos
+  }
+  class RegistroBitacora {
+    -accion
+    -entidad
+    -fechaHora
+  }
+  class CambioPendiente {
+    -entidad
+    -operacion
+    -estado
+    +enviar()
+    +marcarConfirmado()
+  }
+  class ServicioSemaforo {
+    -plazoVerdeMeses
+    -plazoAmarilloMeses
+    +clasificar(lote)
+  }
+  class RegistrarDispensacion {
+    +ejecutar(solicitud)
+  }
+  Paciente "1" --> "*" Consulta
+  Paciente "1" --> "*" Cita
+  Paciente "1" --> "*" Vacunacion
+  Paciente "1" --> "*" Dispensacion
+  Consulta "1" *-- "1" SignosVitales
+  Consulta "1" --> "*" Receta
+  Consulta "1" --> "*" Dispensacion
+  Medicamento "1" *-- "*" Lote
+  Lote "1" *-- "*" MovimientoKardex
+  Dispensacion "*" --> "1" Lote
+  Dispensacion "1" --> "1" MovimientoKardex : genera
+  Usuario "*" --> "*" Perfil
+  Usuario "1" --> "*" RegistroBitacora
+  RegistrarDispensacion ..> Dispensacion
+  RegistrarDispensacion ..> ServicioSemaforo
+  ServicioSemaforo ..> Lote
+  CambioPendiente ..> Paciente : referencia

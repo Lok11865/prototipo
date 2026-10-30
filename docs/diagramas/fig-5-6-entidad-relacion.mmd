@@ -1,0 +1,51 @@
+erDiagram
+  PACIENTE ||--o{ CONSULTA : tiene
+  PACIENTE ||--o{ CITA : tiene
+  PACIENTE ||--o{ VACUNACION : recibe
+  PACIENTE ||--o{ SEGUIMIENTO_CRONICO : tiene
+  CONSULTA ||--|| SIGNOS_VITALES : tiene
+  CONSULTA ||--o{ RECETA : tiene
+  CONSULTA ||--o{ DISPENSACION : origina
+  MEDICAMENTO ||--o{ LOTE : tiene
+  LOTE ||--o{ MOVIMIENTO_KARDEX : tiene
+  LOTE ||--o{ DISPENSACION : se_entrega_de
+  DISPENSACION |o--|| MOVIMIENTO_KARDEX : genera
+  USUARIO ||--o{ USUARIO_PERFIL : tiene
+  PERFIL ||--o{ USUARIO_PERFIL : agrupa
+  USUARIO ||--o{ BITACORA : realiza
+  PACIENTE {
+    uuid id PK
+    string numero_expediente
+    string nombres
+    string apellidos
+    date fecha_nacimiento
+  }
+  CONSULTA {
+    uuid id PK
+    uuid paciente_id FK
+    date fecha
+    string diagnostico
+  }
+  MEDICAMENTO {
+    uuid id PK
+    string nombre
+    int existencia_minima
+  }
+  LOTE {
+    uuid id PK
+    uuid medicamento_id FK
+    string numero_lote
+    date fecha_vencimiento
+  }
+  MOVIMIENTO_KARDEX {
+    uuid id PK
+    uuid lote_id FK
+    string tipo
+    int cantidad
+  }
+  DISPENSACION {
+    uuid id PK
+    uuid consulta_id FK
+    uuid lote_id FK
+    int cantidad
+  }

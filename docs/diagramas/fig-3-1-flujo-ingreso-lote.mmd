@@ -1,0 +1,10 @@
+flowchart TD
+  A((Inicio)) --> B[Medicamentos: Ingresar lote]
+  B --> C[Elige o crea el medicamento]
+  C --> D[Ingresa número de lote, vencimiento, cantidad, proveedor y fecha de ingreso]
+  D --> E[El sistema muestra el color del semáforo]
+  E --> F{¿La fecha de vencimiento ya pasó?}
+  F -- Sí --> G[Advierte y pide confirmación] --> H
+  F -- No --> H[Guarda el lote]
+  H --> I[Se anota la entrada en el kardex]
+  I --> Z((Fin))

@@ -1,0 +1,24 @@
+flowchart TB
+  subgraph CLI[Cliente Flutter]
+    subgraph PRES[Presentación]
+      V[Pantallas] --> VM[ViewModels]
+    end
+    subgraph DOM[Dominio]
+      UC[Casos de uso] --> ENT[Entidades y reglas RN]
+      UC --> IREP[Interfaces de repositorio]
+    end
+    subgraph DAT[Datos]
+      REPO[Repositorios] --> LOC[(SQLite cifrada)]
+      REPO --> REM[Cliente de la API REST]
+      REPO --> COLA[Cola de sincronización]
+    end
+  end
+  subgraph SRV[Servidor Node.js]
+    MW[Middleware: autenticación, permisos y bitácora] --> CTRL[Controladores]
+    CTRL --> SVC[Servicios: reglas de negocio y permisos]
+    SVC --> SREPO[Repositorios]
+    SREPO --> PG[(PostgreSQL)]
+  end
+  VM --> UC
+  REPO -. implementa .-> IREP
+  REM -- HTTPS y JSON --> MW

@@ -1,0 +1,51 @@
+flowchart LR
+  classDef actor fill:#e0f2f1,stroke:#0f766e
+  MED([Médico])
+  ENF([Enfermería])
+  REC([Recepción])
+  FAR([Medicamentos])
+  ADM([Administrador])
+  SIS([Sistema])
+  subgraph M1[Pacientes y consultas]
+    CU01([CU-01 Registrar paciente])
+    CU02([CU-02 Buscar paciente])
+    CU03([CU-03 Programar cita])
+    CU04([CU-04 Registrar consulta])
+    CU05([CU-05 Escanear receta])
+    CU13([CU-13 Seguimiento de crónicos])
+    CU14([CU-14 Registrar vacunación])
+  end
+  subgraph M2[Farmacia e inventario]
+    CU06([CU-06 Dispensar medicamento])
+    CU07([CU-07 Registrar ingreso de lote])
+    CU08([CU-08 Consultar semáforo y alertas])
+    CU09([CU-09 Conteo físico y ajustes])
+  end
+  subgraph M3[Administración y reportes]
+    CU10([CU-10 Generar reporte])
+    CU11([CU-11 Administrar usuarios y perfiles])
+    CU12([CU-12 Sincronizar datos])
+  end
+  REC --- CU01
+  ENF --- CU01
+  MED --- CU02
+  ENF --- CU02
+  REC --- CU03
+  MED --- CU04
+  ENF --- CU04
+  MED --- CU05
+  ENF --- CU05
+  MED --- CU13
+  ENF --- CU14
+  FAR --- CU06
+  ENF --- CU06
+  FAR --- CU07
+  FAR --- CU08
+  ENF --- CU08
+  MED --- CU08
+  FAR --- CU09
+  ADM --- CU10
+  MED --- CU10
+  ENF --- CU10
+  ADM --- CU11
+  SIS --- CU12

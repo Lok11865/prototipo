@@ -1,0 +1,16 @@
+flowchart TD
+  A([Inicio: dispensar medicamento]) --> B[Obtener lotes con existencia mayor a cero]
+  B --> C[Descartar lotes vencidos]
+  C --> D{¿Queda algún lote?}
+  D -- No --> E[Informar que no hay existencias]
+  E --> Z([Fin])
+  D -- Sí --> F[Ordenar por vencimiento, el más próximo primero]
+  F --> G[Proponer el primero y mostrar su color]
+  G --> H{¿El usuario acepta?}
+  H -- No --> I[Elegir otro lote vigente y registrar el cambio]
+  H -- Sí --> J{¿Cantidad mayor que la existencia del lote?}
+  I --> J
+  J -- Sí --> K[Ajustar cantidad o completar con otro lote]
+  K --> J
+  J -- No --> L[Registrar dispensación y movimiento de salida]
+  L --> Z

@@ -1,0 +1,8 @@
+stateDiagram-v2
+  [*] --> Pendiente : se guarda un dato sin conexión
+  Pendiente --> Enviando : se inicia el envío
+  Enviando --> Confirmado : el servidor confirma
+  Enviando --> Error : falla el envío
+  Error --> Pendiente : se reintenta con espera
+  Enviando --> EnConflicto : el servidor detecta conflicto
+  EnConflicto --> Confirmado : se aplica ADR-07 y se anota en bitácora

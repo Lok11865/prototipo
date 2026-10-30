@@ -1,0 +1,6 @@
+stateDiagram-v2
+  [*] --> Programada : se programa
+  Programada --> Programada : se reprograma
+  Programada --> Atendida : el paciente es atendido
+  Programada --> Cancelada : se cancela
+  Programada --> NoAsistio : pasa la hora sin atención

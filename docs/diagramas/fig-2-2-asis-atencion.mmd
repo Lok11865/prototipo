@@ -1,0 +1,20 @@
+flowchart TD
+  subgraph PAC[Paciente]
+    P0((Llega al centro))
+    P1[Recibe sus medicamentos]
+    P2((Se retira))
+  end
+  subgraph ENF[Enfermería, con función de recepción]
+    E1[Busca la ficha SIGSA en papel]
+    E2{¿Existe la ficha?}
+    E3[Abre una ficha nueva según el grupo de edad]
+    E4[Entrega los medicamentos y anota en el cuaderno]
+  end
+  subgraph MED[Médico]
+    M1[Atiende y anota en la ficha]
+    M2[Escribe la receta en papel y la entrega al paciente]
+  end
+  P0 --> E1 --> E2
+  E2 -- Sí --> M1
+  E2 -- No --> E3 --> M1
+  M1 --> M2 --> E4 --> P1 --> P2

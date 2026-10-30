@@ -1,0 +1,7 @@
+flowchart TD
+  subgraph SEM[Proceso semanal]
+    W1[Registra el conteo físico en el sistema]
+    W2[El sistema compara con el kardex y exige motivo en los ajustes]
+    W3[El sistema genera los reportes en PDF para imprimir]
+  end
+  W1 --> W2 --> W3

@@ -1,0 +1,9 @@
+flowchart TD
+  A([Inicio: clasificar lote]) --> B[Calcular meses para el vencimiento]
+  B --> C{¿Ya venció?}
+  C -- Sí --> R1[ROJO y bloqueado para dispensar]
+  C -- No --> D{¿Faltan menos de 3 meses?}
+  D -- Sí --> R2[ROJO]
+  D -- No --> E{¿Faltan más de 6 meses?}
+  E -- Sí --> V[VERDE]
+  E -- No --> AM[AMARILLO]

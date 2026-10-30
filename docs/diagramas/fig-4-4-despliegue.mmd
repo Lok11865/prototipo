@@ -1,0 +1,23 @@
+flowchart LR
+  subgraph D1[Celular Android]
+    APP1[Aplicación Flutter]
+    DB1[(SQLite cifrada)]
+    APP1 --- DB1
+  end
+  subgraph D2[Equipo de escritorio con navegador]
+    APP2[Aplicación Flutter web o de escritorio]
+    DB2[(Almacenamiento local)]
+    APP2 --- DB2
+  end
+  subgraph SRV[Servidor en la nube]
+    API[API REST Node.js]
+    PG[(PostgreSQL)]
+    IMG[Almacén de imágenes de recetas]
+    API --- PG
+    API --- IMG
+  end
+  BK[(Respaldo diario cifrado)]
+  APP1 -- HTTPS --> API
+  APP2 -- HTTPS --> API
+  PG -.-> BK
+  IMG -.-> BK

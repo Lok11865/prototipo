@@ -1,0 +1,18 @@
+flowchart LR
+  SEG[Seguridad y usuarios]
+  BIT[Bitácora] --> SEG
+  PAC[Pacientes] --> SEG
+  CON[Consultas y fichas] --> PAC
+  REC[Recetas] --> CON
+  INV[Inventario de lotes] --> SEG
+  DIS[Dispensación] --> CON
+  DIS --> INV
+  REP[Reportes] --> PAC
+  REP --> CON
+  REP --> DIS
+  REP --> INV
+  SIN[Sincronización] -.-> PAC
+  SIN -.-> CON
+  SIN -.-> REC
+  SIN -.-> INV
+  SIN -.-> DIS

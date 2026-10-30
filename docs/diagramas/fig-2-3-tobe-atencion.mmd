@@ -1,0 +1,31 @@
+flowchart TD
+  subgraph PAC[Paciente]
+    P0((Llega al centro))
+    P1[Recibe sus medicamentos]
+    P2((Se retira))
+  end
+  subgraph ENF[Enfermería, con función de recepción]
+    E1[Busca al paciente en el sistema]
+    E2{¿Existe?}
+    E3[Registra al paciente, con validación de duplicados]
+  end
+  subgraph MED[Médico]
+    M1[Registra la consulta en la ficha sugerida por la edad]
+    M2[Fotografía la receta antes de entregarla]
+  end
+  subgraph FAR[Enfermería, con perfil de medicamentos]
+    F1[Elige medicamento y cantidad]
+    F2{¿Lote vigente y con existencia?}
+    F3[Elige otro lote o informa que no hay existencias]
+    F4[Confirma la entrega]
+  end
+  subgraph SIS[Sistema]
+    S1[Propone el lote que vence primero]
+    S2[Descuenta existencias, anota el kardex y actualiza el semáforo]
+  end
+  P0 --> E1 --> E2
+  E2 -- Sí --> M1
+  E2 -- No --> E3 --> M1
+  M1 --> M2 --> F1 --> S1 --> F2
+  F2 -- No --> F3 --> F1
+  F2 -- Sí --> F4 --> S2 --> P1 --> P2
